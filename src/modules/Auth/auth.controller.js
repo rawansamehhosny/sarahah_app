@@ -37,5 +37,55 @@ authcontroller.post('/login', async (req, res, next) => {
     }
 });
 
+authcontroller.post('/refresh-token', async (req, res, next) => {
+    const { authorization } = req.headers;
+    console.log("--- Raw Authorization Header From Postman ---", authorization); // 👈 سطر الفحص 1
+    if (!authorization) {
+        return next(new Error("Refresh token is required", { cause: 400 }));
+    }
+
+    const refreshToken = authorization.startsWith('Bearer ')
+        ? authorization.split(' ')[1]
+        : authorization;
+    console.log("--- Cleaned Refresh Token Sent To Service ---", refreshToken); // 👈 سطر الفحص 2
+    try {
+        const newTokens = await authService.refreshTokenService(refreshToken);
+        return res.status(200).json({
+            success: true,
+            message: "Token refreshed successfully",
+            ...newTokens 
+        });
+
+    } catch (error) {
+        next(error);
+    }
+});
+
+
+authcontroller.post('/gmail/regsiter', async (req, res, next) => {
+    try {
+        const response = await authService.googleSignUpService(req.body);
+        return res.status(201).json({
+            success: true,
+            message: "User registered successfully with Google",
+            data: response
+        });
+    } catch (error) {
+        next(error);
+    }
+});
+
+authcontroller.post('/gmail/login', async (req, res, next) => {
+    try {
+        const response = await authService.googleLoginService(req.body);
+        return res.status(200).json({
+            success: true,
+            message: "Login successful with Google",
+            data: response
+        });
+    } catch (error) {
+        next(error);
+    }
+});
 
 export default authcontroller;

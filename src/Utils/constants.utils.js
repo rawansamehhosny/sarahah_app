@@ -20,3 +20,8 @@ export const gender = {
     FEMALE: 'female',
     OTHER: 'other'
 };
+
+export const tokenTypes = {
+    ACCESS: 'access',
+    REFRESH: 'refresh'
+};

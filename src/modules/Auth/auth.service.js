@@ -1,10 +1,13 @@
-import User from "../../DB/models/user.model.js";
 import { comparePassword, hashPassword } from "../../Utils/crypto.util.js";
 import { encryptData } from "../../Utils/crypto.util.js";
 import {UserRepository } from "../../DB/Repositories/index.js";
-import jwt from "jsonwebtoken";
 import envConfig from "../../config/env.config.js";
-import { generateToken, loginCredentialsCreator } from "../../middelwares/index.js";
+import { generateToken, createLoginCredentials } from "../../middelwares/index.js";
+import { validateTokenAndGetUser } from "../../middelwares/tokens.js";
+import { tokenTypes } from "../../Utils/constants.utils.js";
+import { GoogleAuth } from "google-auth-library";
+import { OAuth2Client } from "google-auth-library";
+import { createLoginCredentials } from "../../middelwares/tokens.js";
 const JWT_SECRET = envConfig.jwt.secret;
 const JWT_ACCESS_EXPIRATION = envConfig.jwt.accessExpiration;
 
@@ -55,7 +58,7 @@ export const loginService = async (data) => {
     }
 
     //token generation 
-    const token = loginCredentialsCreator({
+    const token = createLoginCredentials({
         payload: {
             userId: userFound._id,
             email: userFound.email,
@@ -70,3 +73,64 @@ export const loginService = async (data) => {
     });
     return { user: userFound, token };
 }
+
+
+export const refreshTokenService = async (refreshToken) => {
+    try {
+
+        const user = await validateTokenAndGetUser({ token: refreshToken, tokenTypes: tokenTypes.REFRESH });
+        const newTokens = createLoginCredentials({
+            payload: {
+                userId: user._id,
+                email: user.email,
+                role: user.role
+            }
+        });
+
+        return newTokens;
+
+    } catch (error) {
+        error.cause = error.cause || 401;
+        error.message = error.name === 'TokenExpiredError'
+            ? "Refresh token expired, please login completely"
+            : error.message || "Invalid refresh token";
+        throw error;
+    }
+}
+
+// Google Authentication Service
+const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
+
+export const googleAuthService = async ({idToken}) => {
+    const ticket = await client.verifyIdToken({
+        idToken,
+        audience: process.env.GOOGLE_CLIENT_ID
+    });
+
+    const payload = ticket.getPayload();
+    const { email, name, picture } = payload;
+
+    let user = await UserRepository.FindOneDoc({ email });
+    if (!user ) {
+        user = await UserRepository.Createdoc({
+            firstName: name,
+            lastName: '',
+            email: email,
+            googleId: googleId,
+            avatar: picture
+        }) 
+    };
+
+    const token = createLoginCredentials({
+        payload: {
+            userId: user._id,
+            email: user.email,
+            role: user.role
+        }
+    });
+    return {
+        message: "Logged in successfully with Google",
+        user: { id: user._id, email: user.email, username: user.username },
+        ...token
+    };
+};

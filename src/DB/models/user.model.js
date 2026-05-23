@@ -45,7 +45,8 @@ const userSchema = new mongoose.Schema({
     phone: {
         type: String,
         default: null
-    }
+    },
+    avatar: { type: String, default: "" }
 }, {
     timestamps: true, 
     toJSON: { virtuals: true }, // دي مهمة عشان الـ fullName يظهر لما تبعتي JSON لـ Postman

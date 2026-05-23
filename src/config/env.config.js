@@ -15,9 +15,31 @@ const envConfig = {
         iv: parseInt(process.env.IV) || 16
     },
     jwt: {
-        secret: process.env.JWT_SECRET,
-        accessExpiration: process.env.JWT_ACCESS_EXPIRATION || '5d'
+        user:{
+
+            accessSecret: process.env.JWT_ACCESS_SECRET_USER,
+            accessExpiration: process.env.JWT_ACCESS_EXP_USER,
+
+            refreshSecret: process.env.JWT_REFRESH_SECRET_USER,
+            refreshExpiration: process.env.JWT_REFRESH_EXP_USER
+           
+        },  
+
+        admin: {
+            accessSecret: process.env.JWT_ACCESS_SECRET_ADMIN,
+            accessExpiration: process.env.JWT_ACCESS_EXP_ADMIN,
+            
+            refreshSecret: process.env.JWT_REFRESH_SECRET_ADMIN,
+            refreshExpiration: process.env.JWT_REFRESH_EXP_ADMIN
+        }
+    },
+    
+    google: {
+        clientId: process.env.GOOGLE_CLIENT_ID,
+        clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+        redirectUri: process.env.GOOGLE_REDIRECT_URI
     }
+
 }
 
 export default envConfig; 

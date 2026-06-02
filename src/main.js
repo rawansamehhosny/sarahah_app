@@ -7,10 +7,25 @@ import globalErrorHandler from './middelwares/global-error-handler-middleware.js
 import {encryptData, decryptData} from './Utils/crypto.util.js';
 import fs from 'fs';
 import crypto from 'crypto';
+import cors from 'cors';
 
 const app = express();
 app.use(express.json());
 const port =envConfig.app.port;
+
+// CORS configuration
+app.use(cors({
+    origin: (origin, callback) => {
+        if (!origin || envConfig.cors.includes(origin)) {
+            callback(null, true);
+        } else 
+          {           
+           callback(new Error('Not allowed by CORS'));
+        }   
+       },
+    methods: ['GET', 'POST', 'PUT', 'DELETE'], // Allowed HTTP methods
+    allowedHeaders: ['Content-Type', 'Authorization'] // Allowed headers
+}));
 
 // Connect to the database
 dbconnect();

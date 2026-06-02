@@ -20,8 +20,8 @@ export class BaseRepository {
         return this.model.find(filter, null, options);
     }
 
-    UpdateById(id, updateData) {
-        return this.model.findByIdAndUpdate(id, updateData, { returnDocument: 'after', runValidators: true });
+    UpdateById({_id, updateData, options = { new: true }}) {
+        return this.model.findByIdAndUpdate(_id, updateData, { returnDocument: 'after', runValidators: true });
     }
     FindAllDocs(options = {}) {
         return this.model.find({}, null, options);

@@ -22,7 +22,7 @@ export const getUserProfileService = async (userData) => {
 };
 
 export const updateUserProfileService = async (_id, updateData) => {
-    const user = await UserRepository.UpdateById(_id, updateData);
+    const user = await UserRepository.UpdateById({_id, updateData});
     if (!user) {
         const error = new Error("User not found");
         error.cause = 404;

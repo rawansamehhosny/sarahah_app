@@ -25,3 +25,8 @@ export const tokenTypes = {
     ACCESS: 'access',
     REFRESH: 'refresh'
 };
+
+export const PROVIDESR = {
+    SYSTEM: 'system',
+    GOOGLE: 'google'
+};

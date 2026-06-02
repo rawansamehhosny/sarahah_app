@@ -22,7 +22,10 @@ export const authMiddleware = async (req, res, next) => {
 
     try {
         const user = await validateTokenAndGetUser({token, tokenTypes: tokenTypes.ACCESS});
-        req.user = user.toObject();
+        const userObj = user.toObject();
+        userObj._id = userObj._id.toString();
+
+        req.user = userObj;
         next();
 
     } catch (error) {

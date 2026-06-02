@@ -1,5 +1,6 @@
 import mongoose from "mongoose";
 import { userRoles, userstatus, gender } from "../../Utils/index.js";
+import { PROVIDESR } from "../../Utils/constants.utils.js";
 const userSchema = new mongoose.Schema({
     firstName: {
         type: String,
@@ -10,9 +11,9 @@ const userSchema = new mongoose.Schema({
     },
     lastName: {
         type: String,
-        required: true,
+        lastName: { type: String, default: "" },
         trim: true, 
-        minlength: [3, 'Last name must be at least 3 characters long'],
+       // minlength: [3, 'Last name must be at least 3 characters long'],
         maxlength: [50, 'Last name must be less than 50 characters long']
     },
     email: {
@@ -25,9 +26,13 @@ const userSchema = new mongoose.Schema({
         }
     },
     password: {
-        type: String,
-        required: true
-    },
+            type: String,
+            required: function () {
+                // الباسورد بيبقى إجباري فقط لو اليوزر مش مسجل بجوجل
+                return this.provider === 'local';
+            }
+        },
+        
     role: {
         type: String,
         enum: Object.values(userRoles),
@@ -46,7 +51,20 @@ const userSchema = new mongoose.Schema({
         type: String,
         default: null
     },
-    avatar: { type: String, default: "" }
+    avatar: { type: String, default: "" },
+        provider: {
+        type: String,
+        enum: Object.values(PROVIDESR),
+        default: PROVIDESR.SYSTEM
+    },
+    googlesub: {
+        type: String,
+        default: null,
+        index: {
+            unique: true,
+            name: 'google_sub_unique_index'
+        }
+     }
 }, {
     timestamps: true, 
     toJSON: { virtuals: true }, // دي مهمة عشان الـ fullName يظهر لما تبعتي JSON لـ Postman

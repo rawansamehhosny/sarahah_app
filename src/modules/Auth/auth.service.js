@@ -2,27 +2,27 @@ import { comparePassword, hashPassword } from "../../Utils/crypto.util.js";
 import { encryptData } from "../../Utils/crypto.util.js";
 import {UserRepository } from "../../DB/Repositories/index.js";
 import envConfig from "../../config/env.config.js";
-import { generateToken, createLoginCredentials } from "../../middelwares/index.js";
 import { validateTokenAndGetUser } from "../../middelwares/tokens.js";
 import { tokenTypes } from "../../Utils/constants.utils.js";
-import { GoogleAuth } from "google-auth-library";
 import { OAuth2Client } from "google-auth-library";
 import { createLoginCredentials } from "../../middelwares/tokens.js";
+import { PROVIDESR } from "../../Utils/constants.utils.js";
+import {
+    ConflictError,
+    NotFoundError,
+    BadRequestError,
+    AuthenticationError
+} from "../../Utils/errors/exceptions.js";
 const JWT_SECRET = envConfig.jwt.secret;
 const JWT_ACCESS_EXPIRATION = envConfig.jwt.accessExpiration;
 
 export const signUpService = async (data) => {
     const { firstName, lastName, email, password, gender, phone } = data;
-
     //(Check Duplication)
     const isEmailExist = await UserRepository.FindOneDoc({ email });
     if (isEmailExist) {
-        // بنرمي Error محترم يروح للـ Global Handler
-        const error = new Error("Email already exists");
-        error.cause = 409; // Conflict
-        throw error;
+     throw new ConflictError("Email already exists");
     }
-
     // New User Creation
     const hashedPassword = await hashPassword(password);
     const newUser = await UserRepository.Createdoc({
@@ -37,7 +37,6 @@ export const signUpService = async (data) => {
         newUser.phone = encryptData(phone);
         await newUser.save();
     }
-
     return newUser;
 };
 
@@ -46,15 +45,11 @@ export const loginService = async (data) => {
     // Check if user exists
     const userFound = await UserRepository.FindOneDoc({ email });
     if (!userFound) {
-        const error = new Error("This account doesn't exist");
-        error.cause = 401; // Unauthorized
-        throw error;
+        throw new NotFoundError("This account doesn't exist");
     }
     const isPasswordValid = await comparePassword(password, userFound.password);
     if (!isPasswordValid) {
-        const error = new Error("Invalid email or password");
-        error.cause = 401;
-        throw error;
+        throw new AuthenticationError("Invalid email or password");
     }
 
     //token generation 
@@ -90,11 +85,11 @@ export const refreshTokenService = async (refreshToken) => {
         return newTokens;
 
     } catch (error) {
-        error.cause = error.cause || 401;
-        error.message = error.name === 'TokenExpiredError'
+        const message = error.name === 'TokenExpiredError'
             ? "Refresh token expired, please login completely"
             : error.message || "Invalid refresh token";
-        throw error;
+
+        throw new AuthenticationError(message);
     }
 }
 
@@ -104,23 +99,43 @@ const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 export const googleAuthService = async ({idToken}) => {
     const ticket = await client.verifyIdToken({
         idToken,
-        audience: process.env.GOOGLE_CLIENT_ID
+        audience: envConfig.google.clientId
     });
-
     const payload = ticket.getPayload();
-    const { email, name, picture } = payload;
+    console.log("DEBUG PAYLOAD:", JSON.stringify(payload, null, 2));
+    const { email, given_name, family_name, picture } = payload;
+    if (!payload || !payload.email_verified) {
+        throw new BadRequestError("Invalid Google ID token");
+    }
+    let user = await UserRepository.FindOneDoc({
+        $or: [
+            { email: payload.email },
+            { googlesub: payload.sub }
+        ], provider: PROVIDESR.GOOGLE
 
-    let user = await UserRepository.FindOneDoc({ email });
-    if (!user ) {
+    });
+    if (user) {
+        user = await UserRepository.UpdateById({    
+            id: user._id.toString(),
+             updateData:
+            {
+                firstName: payload.given_name,
+                lastName: payload.family_name || '',
+                avatar: payload.picture,
+                provider: PROVIDESR.GOOGLE,
+                googlesub: payload.sub // تأكدي من الاسم هنا
+            }
+        });
+    } else {
         user = await UserRepository.Createdoc({
-            firstName: name,
-            lastName: '',
-            email: email,
-            googleId: googleId,
-            avatar: picture
-        }) 
-    };
-
+            firstName: payload.given_name,
+            lastName: payload.family_name,
+            email: payload.email,
+            provider: PROVIDESR.GOOGLE,
+            googlesub: payload.sub,
+            avatar: payload.picture
+        });
+    }
     const token = createLoginCredentials({
         payload: {
             userId: user._id,

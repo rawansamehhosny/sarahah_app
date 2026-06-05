@@ -4,6 +4,8 @@ const authcontroller = Router();
 import { unifiedResponseMiddleware } from "../../middelwares/unified-response.middleware.js";
 import validationMiddleware from "../../middelwares/validation.middleware.js";
 import { registerSchema, loginSchema , googleAuthSchema} from "../../validators/auth.validators.js";
+import multerLocal from "../../middelwares/multer.middleware.js";
+const upload = multerLocal();
 
 authcontroller.get('/login', validationMiddleware(loginSchema), unifiedResponseMiddleware(async (req, res) => {
     return {

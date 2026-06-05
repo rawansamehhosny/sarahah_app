@@ -1,6 +1,5 @@
-import Joi from "joi";
-import {BadRequestError} from "../utils/errors/exceptions.js";
-import { registerSchema } from "../validators/auth.validators.js";
+import joi from "joi";
+import {BadRequestError} from "../Utils/errors/exceptions.js";
 
 const validationMiddleware = (schema) => {
     return (req, res, next) => {

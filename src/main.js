@@ -30,6 +30,9 @@ app.use(cors({
 // Connect to the database
 dbconnect();
 
+// Serve static files from the uploads directory
+app.use("uploads", express.static("uploads")); 
+
 // test route
 app.get('/', (req, res) => {
     res.send('sarahah app is running');

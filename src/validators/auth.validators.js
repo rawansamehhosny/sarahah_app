@@ -1,25 +1,36 @@
 import joi from 'joi';
 import { gender } from '../Utils/index.js';
+import { generalValidators } from './general.validators.js';
+
 
 export const registerSchema = {
     body: joi.object({
-        firstName: joi.string().min(3).max(50).required(),
-        lastName: joi.string().min(3).max(50).required(), 
-        email: joi.string().email().required(),
-        password: joi.string().min(6).required(),
-        phone: joi.string().optional(),
+        firstName: joi.string().alphanum().min(3).max(50).required(),
+
+        lastName: joi.string().alphanum().min(3).max(50).required(), 
+       
+        email: generalValidators.email,
+
+        password: generalValidators.password,
+
+        confirmPassword: joi.string()
+            .valid(joi.ref('password'))
+            .messages({ 'any.only': 'Passwords do not match!' }),
+
+        phone: joi.string().min(11).max(12).optional(),
+
         gender: joi.string().valid(...Object.values(gender)).optional(),
+
         avatar: joi.string().optional()
     })
 };
 export const loginSchema = {
     body: joi.object({
-        email: joi.string().email().required(), // لازم يكتب إيميل حقيقي
-        password: joi.string().required()        // لازم يكتب الباسورد
+        email: generalValidators.email,
+        password: generalValidators.password
     })
 };
 
-// جوه ملف src/validators/auth.validators.js
 
 export const googleAuthSchema = {
     body: joi.object({

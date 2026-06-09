@@ -58,3 +58,7 @@ export const hgetall = async (key) => {
 export const hkeys = async (key) => {
     return await redisClient.hkeys(key);
 };
+
+export const hvals = async (key) => {
+    return await redisClient.hvals(key);
+};

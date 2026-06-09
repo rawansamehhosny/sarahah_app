@@ -8,6 +8,9 @@ import {encryptData, decryptData} from './Utils/crypto.util.js';
 import fs from 'fs';
 import crypto from 'crypto';
 import cors from 'cors';
+import { connect } from 'http2';
+import { connectRedis } from './config/redis.config.js';
+import * as redisService from './services/redis.services.js';
 
 const app = express();
 app.use(express.json());
@@ -29,6 +32,8 @@ app.use(cors({
 
 // Connect to the database
 dbconnect();
+// Connect to Redis
+connectRedis();
 
 // Serve static files from the uploads directory
 app.use("uploads", express.static("uploads")); 
@@ -89,3 +94,17 @@ app.listen(port, () => {
 //   fs.writeFileSync('./keys/private.pem', privateKey);
 //   console.log('Keys generated and saved.');
 // }
+
+
+// redisService.set('testKey', 'Hello Redis', { EX: 60})
+//   .then(() => redisService.get('testKey'))
+//   .then(value => console.log('Value from Redis:', value))
+//   .catch(err => console.error('Redis error:', err));
+
+  // redisService.expire('testKey', 30)
+  // .then(() => redisService.ttl('testKey'))
+  // .then(ttl => console.log('TTL of testKey:', ttl))
+  // .catch(err => console.error('Redis error:', err));
+// redisService.ttl('testKey')
+//   .then(ttl => console.log('TTL of testKey:', ttl))
+//   .catch(err => console.error('Redis error:', err));

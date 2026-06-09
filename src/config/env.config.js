@@ -39,7 +39,11 @@ const envConfig = {
         clientSecret: process.env.GOOGLE_CLIENT_SECRET,
         redirectUri: process.env.GOOGLE_REDIRECT_URI
     },
-    cors: process.env.ALLOWED_ORIGINS ? process.env.ALLOWED_ORIGINS.split(',') : []
+    cors: process.env.ALLOWED_ORIGINS ? process.env.ALLOWED_ORIGINS.split(',') : [],
+
+    redis: {
+        url: process.env.REDIS_URL || 'redis://localhost:6379'
+    }
 }
 
 export default envConfig; 

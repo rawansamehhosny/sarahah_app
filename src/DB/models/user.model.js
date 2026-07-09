@@ -64,7 +64,11 @@ const userSchema = new mongoose.Schema({
             unique: true,
             name: 'google_sub_unique_index'
         }
-     }
+     },
+     isEmailVerified: {
+        type: Boolean,
+        default: false
+    }
 }, {
     timestamps: true, 
     toJSON: { virtuals: true }, // دي مهمة عشان الـ fullName يظهر لما تبعتي JSON لـ Postman

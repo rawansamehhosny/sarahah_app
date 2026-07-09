@@ -1,8 +1,3 @@
-import jwt from 'jsonwebtoken';
-import envConfig from '../config/env.config.js';
-import { verifyToken } from './tokens.js';
-import { UserRepository } from '../DB/Repositories/index.js';
-import { getSignatureByTypeAndRole, decodedTokenRole, detectSignatureByRole } from './tokens.js';
 import { tokenTypes } from '../Utils/constants.utils.js';
 import { validateTokenAndGetUser } from './tokens.js'
 
@@ -21,18 +16,19 @@ export const authMiddleware = async (req, res, next) => {
         : authHeader;
 
     try {
-        const user = await validateTokenAndGetUser({token, tokenTypes: tokenTypes.ACCESS});
+        const { user, decoded } = await validateTokenAndGetUser({token, tokenTypes: tokenTypes.ACCESS});
         const userObj = user.toObject();
         userObj._id = userObj._id.toString();
 
         req.user = userObj;
+        req.accessToken = decoded;
         next();
 
     } catch (error) {
         error.cause = 401;
         error.message = error.name === 'TokenExpiredError'
             ? "Token expired, please login again"
-            : "Invalid token";
+            : error.message || "Invalid token";
         next(error);
     }}
 

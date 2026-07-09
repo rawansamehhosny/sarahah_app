@@ -42,7 +42,13 @@ const envConfig = {
     cors: process.env.ALLOWED_ORIGINS ? process.env.ALLOWED_ORIGINS.split(',') : [],
 
     redis: {
-        url: process.env.REDIS_URL || 'redis://localhost:6379'
+        url: process.env.REDIS_URL
+    },
+    email: {
+        smtpHost: process.env.SMTP_HOST || 'smtp.gmail.com',
+        smtpPort: parseInt(process.env.SMTP_PORT) || 587,
+        smtpUser: process.env.SMTP_USER || '',
+        smtpPass: process.env.SMTP_PASS || ''
     }
 }
 

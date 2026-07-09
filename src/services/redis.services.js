@@ -62,3 +62,17 @@ export const hkeys = async (key) => {
 export const hvals = async (key) => {
     return await redisClient.hvals(key);
 };
+
+const CalcTTL = (time) => {
+    const noew = new Date();
+    const exp = new Date(time);
+    const ttlToken = Math.floor((exp.getTime() - noew.getTime()) / 1000);
+    return ttlToken > 0 ? ttlToken : 0;
+};
+
+export const BlacklistToken = async ({key, exp}) => {
+    const ttl = CalcTTL(exp);
+    if (ttl > 0) {
+        await set(key, "blacklisted", {EX: ttl});
+    }
+};

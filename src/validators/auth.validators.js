@@ -38,3 +38,9 @@ export const googleAuthSchema = {
     })
 };
 
+export const verifyOtpSchema = {
+    body: joi.object({
+        otp: joi.string().pattern(/^\d{6}$/).required()
+    })
+};
+

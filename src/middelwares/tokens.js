@@ -1,7 +1,9 @@
+import crypto from 'node:crypto';
 import jwt from 'jsonwebtoken';
 import envConfig from '../config/env.config.js';
 import { UserRepository } from '../DB/Repositories/index.js';
 import { tokenTypes } from '../Utils/constants.utils.js';
+import { BlacklistToken, get } from '../services/redis.services.js';
 const JWT_SECRET = envConfig.jwt.secret;
 
 //to hendele the roles and return the right signature for each role
@@ -41,26 +43,32 @@ export const getSignatureByTypeAndRole = ({role, tokentypes, both = false}) => {
 //function to create both access and refresh tokens for a user after login, it uses the getSignatureByTypeAndRole function to get the right signature and expiration for each token based on the user's role
 export const createLoginCredentials = ({payload}) => {
     const rolekeys = getSignatureByTypeAndRole ({role: payload.role, both: true})
+    const accessJwtId = crypto.randomUUID();
+    const refreshJwtId = crypto.randomUUID();
 
     const accessToken = generateToken ({
         payload: payload,
         secret: rolekeys.accessSecret,
-        options: { expiresIn: rolekeys.accessExpiration } });
+        options: { expiresIn: rolekeys.accessExpiration, jwtid: accessJwtId } });
     const refreshToken = generateToken ({
         payload: payload,
         secret: rolekeys.refreshSecret,
-        options: { expiresIn: rolekeys.refreshExpiration }
+        options: { expiresIn: rolekeys.refreshExpiration, jwtid: refreshJwtId }
     });
     return { accessToken, refreshToken };
 }
 
-export const decodedTokenRole = ({token}) => {
+export const decodedTokenRole = async ({token, tokenType}) => {
     const data = jwt.decode(token);
-    console.log("Decoded token data:", data);
-    if(!data || !data.userId) {
+    const blacklistKey = `bl_${tokenType}_${data.jti}`;
+    const isBlacklisted = await get(blacklistKey);
+    if (isBlacklisted) {
+        throw new Error("Token has been blacklisted");
+    }
+    if (!data || !data.userId) {
         console.log("Invalid token payload:", data);
         throw new Error("Invalid token payload")
-    }
+    };
     return data;
 };
 
@@ -75,7 +83,7 @@ export const verifyToken = ({token, secret}) => {
 
 
 export const validateTokenAndGetUser = async ({token, tokenTypes}) => {
-    const payload = decodedTokenRole({token});
+    const payload = await decodedTokenRole({token, tokenType: tokenTypes});
     const {TokenSignature} = getSignatureByTypeAndRole({
         role: payload.role,
         tokentypes: tokenTypes
@@ -88,5 +96,6 @@ export const validateTokenAndGetUser = async ({token, tokenTypes}) => {
         error.cause = 404;
         throw error;
     }
-    return user;
+    return {user, decoded};
+
 };

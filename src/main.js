@@ -11,24 +11,18 @@ import cors from 'cors';
 import { connect } from 'http2';
 import { connectRedis } from './config/redis.config.js';
 import * as redisService from './services/redis.services.js';
+import { corsOptions } from './config/cors.config.js';
+import helmet from 'helmet';
+import { limiter } from './config/limiter.config.js';
 
 const app = express();
 app.use(express.json());
+
 const port =envConfig.app.port;
+app.use(limiter); // Apply rate limiting middleware
 
 // CORS configuration
-app.use(cors({
-    origin: (origin, callback) => {
-        if (!origin || envConfig.cors.includes(origin)) {
-            callback(null, true);
-        } else 
-          {           
-           callback(new Error('Not allowed by CORS'));
-        }   
-       },
-    methods: ['GET', 'POST', 'PUT', 'DELETE'], // Allowed HTTP methods
-    allowedHeaders: ['Content-Type', 'Authorization'] // Allowed headers
-}));
+app.use(cors(corsOptions), helmet() );
 
 // Connect to the database
 dbconnect();

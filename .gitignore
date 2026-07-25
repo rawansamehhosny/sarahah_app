@@ -5,3 +5,4 @@ node_modules/
 *.pem
 .dev.env
 .env
+uploads

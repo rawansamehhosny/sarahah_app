@@ -6,22 +6,21 @@ import { TooManyRequestsError } from "../Utils/errors/exceptions.js";
 import { getIPLocation } from "../Utils/iplocation.utils.js";
 
 export const limiter = RateLimit({
-    windowMs: 15 * 60 * 1000, // 15 minutes
+    windowMs: 1, // 1 millisecond window for testing purposes
 
     max: async (req) => {
         //  تعديل req.socket عشان الأمان وضمان عدم ضرب الأيرور
         const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
         const location = await getIPLocation(ip);
 
-        console.log(`Rate limit check for IP: ${ip}, Location: ${location?.country}, ${location?.city}`);
 
         switch (location?.country) {
             case 'EG':
-                return 3; // Limit for Egypt
+                return 10; // Limit for Egypt
             case 'US':
-                return 5; // Limit for USA
+                return 10; // Limit for USA
             default:
-                return 3; // Default limit for other countries
+                return 10; // Default limit for other countries
         }
     },
 
@@ -36,7 +35,6 @@ export const limiter = RateLimit({
     keyGenerator: (req, res) => {
         const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
         const sanitizedIp = ipKeyGenerator(ip);
-        console.log(`Rate limit key generated for IPppp: ${sanitizedIp}, Method: ${req.method}, Path: ${req.path}`);
         return `${sanitizedIp}_${req.method}_${req.path}`;
     },
 

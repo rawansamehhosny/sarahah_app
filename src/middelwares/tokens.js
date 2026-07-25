@@ -66,7 +66,6 @@ export const decodedTokenRole = async ({token, tokenType}) => {
         throw new Error("Token has been blacklisted");
     }
     if (!data || !data.userId) {
-        console.log("Invalid token payload:", data);
         throw new Error("Invalid token payload")
     };
     return data;

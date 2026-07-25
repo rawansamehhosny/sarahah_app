@@ -1,4 +1,4 @@
-import {UserRepository } from "../../DB/Repositories/index.js";
+import { MessageRepository, UserRepository } from "../../DB/Repositories/index.js";
 import envConfig from "../../config/env.config.js";
 import fs from "fs";
 
@@ -12,7 +12,6 @@ export const getUserProfileService = async (userData) => {
     }
 
     const user = await UserRepository.FindById(userData);
-    console.log("Uuuuuuuser found in Service:", user);
     if (!user) {
         const error = new Error("User not found");
         error.cause = 404;
@@ -51,4 +50,32 @@ export const updateUserAvatarService = async (userId, filePath) => {
     const userObject = updatedUser.toObject();
    delete userObject.password;
     return userObject;
+};
+
+export const DeleteUserAccount = async (user) => {
+    const userId = user?.userId ?? user?.id ?? user?._id ?? user;
+
+    if (!userId) {
+        const error = new Error("User id is required");
+        error.cause = 400;
+        throw error;
+    }
+
+    const session = await UserRepository.model.startSession();
+    session.startTransaction();
+
+    try {
+        await UserRepository.deleteById(userId, { session });
+        await MessageRepository.deleteManyDocs({ receiver: userId }, { session });
+
+        await session.commitTransaction();
+        return { success: true, deletedUserId: userId.toString() };
+    } catch (error) {
+        console.error("Error deleting user account:", error);
+
+        await session.abortTransaction();
+        throw error;
+    } finally {
+        await session.endSession();
+    }
 };

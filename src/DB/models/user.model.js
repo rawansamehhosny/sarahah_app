@@ -13,7 +13,6 @@ const userSchema = new mongoose.Schema({
         type: String,
         lastName: { type: String, default: "" },
         trim: true, 
-       // minlength: [3, 'Last name must be at least 3 characters long'],
         maxlength: [50, 'Last name must be less than 50 characters long']
     },
     email: {
@@ -71,8 +70,7 @@ const userSchema = new mongoose.Schema({
     }
 }, {
     timestamps: true, 
-    toJSON: { virtuals: true }, // دي مهمة عشان الـ fullName يظهر لما تبعتي JSON لـ Postman
-    toObject: { virtuals: true }
+    toJSON: { virtuals: true },
 });
 
 userSchema.virtual('fullName').get(function () {

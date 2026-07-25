@@ -15,7 +15,7 @@ const multerLocal = (path, limits= {}) => {
         filename: function (req, file, cb) {
             const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
 
-            // 💡 بناخد الامتداد الحقيقي للفايل زي ما هو (.jpg أو .png) من اسمه الأصلي
+            // بناخد الامتداد الحقيقي للفايل زي ما هو (.jpg أو .png) من اسمه الأصلي
             const ext = pathh.extname(file.originalname); // ده بيرجع مثلاً '.jpg' بالملي
 
             cb(null, file.fieldname + '-' + uniqueSuffix + ext);

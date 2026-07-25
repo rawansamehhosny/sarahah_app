@@ -13,9 +13,33 @@ export class BaseRepository {
         return this.model.findById(id, null, options);
     }
 
-    deleteOneDoc(filter) {
-        return this.model.deleteOne(filter);
+    deleteOneDoc(filter, options = {}) {
+        const {session, ...otherOptions} = filter;
+        const query = this.model.deleteOne(filter, options);
+        if(session) {
+            query.session(session);
+        }
+        return this.model.deleteOne(filter, options);
     }
+
+    deleteManyDocs(filter, options = {}) {
+        const { session, ...otherOptions } = options;
+        const query = this.model.deleteMany(filter, otherOptions);
+        if (session) {
+            query.session(session);
+        }
+        return query;
+    }
+
+    deleteById(id, options = {}) {
+        const {session, ...otherOptions} = options;
+        const query = this.model.findByIdAndDelete(id, otherOptions);
+        if(session) {
+            query.session(session);
+        }
+        return query;
+    }
+
     FindDocs(filter, options = {}) {
         return this.model.find(filter, null, options);
     }

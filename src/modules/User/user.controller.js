@@ -5,6 +5,7 @@ import {authMiddleware } from '../../middelwares/auth.middleware.js';
 import { unifiedResponseMiddleware } from "../../middelwares/unified-response.middleware.js";
 import multerLocal from "../../middelwares/multer.middleware.js";
 import { updateUserAvatarService } from "./user.service.js";
+import { DeleteUserAccount } from "./user.service.js";
 
 const usercontroller = Router();
 
@@ -44,5 +45,15 @@ usercontroller.patch(
         };
     })
 );
+
+//Delete user account
+usercontroller.delete('/delete-account', authMiddleware, unifiedResponseMiddleware(async (req, res, next) => {
+    const user = req.user;
+    await DeleteUserAccount(user);
+    return {
+        statusCode: 200,
+        message: "Account deleted successfully! ✨"
+    };
+}));
 
 export default usercontroller;

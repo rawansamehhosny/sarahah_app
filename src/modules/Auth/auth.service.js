@@ -161,7 +161,6 @@ export const googleAuthService = async ({idToken}) => {
         audience: envConfig.google.clientId
     });
     const payload = ticket.getPayload();
-    console.log("DEBUG PAYLOAD:", JSON.stringify(payload, null, 2));
     const { email, given_name, family_name, picture } = payload;
     if (!payload || !payload.email_verified) {
         throw new BadRequestError("Invalid Google ID token");
@@ -226,10 +225,7 @@ export const logoutService = async (accessToken, refreshToken) => {
         }
         const { exp: accessExp, jti: accessJti } = decodedAcess;
         const { exp: refreshExp, jti: refreshJti } = decodedRefresh;
-        console.log("DEBUG LOGOUT TOKENS:", {
-            decodedAcess,
-            decodedRefresh
-        });
+     
 
         // Blagcklist both tokens in Redis with their respective expiration times
         //put in a promise.all to make sure both operations happen at the same time and we don't have a case where one token is blacklisted and the other isn't due to an error or something

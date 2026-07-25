@@ -103,7 +103,6 @@ authcontroller.post('/gmail/register', validationMiddleware(googleAuthSchema), u
 }));
 
 authcontroller.post('/logout', authMiddleware, unifiedResponseMiddleware(async (req, res, next) => {
-    // هنا ممكن تضيف لوجيك لمسح الـ Refresh Token من الـ Redis أو قاعدة البيانات
    const result = await authService.logoutService(req.accessToken, getRefreshTokenFromHeaders(req));
     return {
         data: result,

@@ -60,56 +60,8 @@ const startApp = async () => {
       console.log(`Server is running on port ${port}`);
     });
   } catch (error) {
-    console.error("Critical error during app startup:", error);
+    console.error('Error starting the application:', error);
   }
 };
 
 startApp();
-
-// Test encryption and decryption
-// const encrypt= encryptData('Hello Ahmed');
-// console.log('Encrypted:', encrypt);
-
-// const decrypt = decryptData(encrypt);
-// console.log('Decrypted:', decrypt);
-
-
-//assymitric encryption
-// if (!fs.existsSync('./keys')) {
-//   fs.mkdirSync('./keys');
-// } 
-// if (fs.existsSync('./keys/private.pem') && fs.existsSync('./keys/public.pem')) {
-//   const privateKey = fs.readFileSync('./keys/private.pem', 'utf8');
-//   const publickey = fs.readFileSync('./keys/public.pem', 'utf8');
-//   console.log('key already generated');
-// }else {
-//   const { publicKey, privateKey } = crypto.generateKeyPairSync('rsa', {
-//     modulusLength: 2048,
-//     publicKeyEncoding: {
-//       type: 'pkcs1',
-//       format: 'pem'
-//     },
-//     privateKeyEncoding: {
-//       type: 'pkcs1',
-//       format: 'pem'
-//     }
-//   });
-//   // Save the generated keys to files
-//   fs.writeFileSync('./keys/public.pem', publicKey);
-//   fs.writeFileSync('./keys/private.pem', privateKey);
-//   console.log('Keys generated and saved.');
-// }
-
-
-// redisService.set('testKey', 'Hello Redis', { EX: 60})
-//   .then(() => redisService.get('testKey'))
-//   .then(value => console.log('Value from Redis:', value))
-//   .catch(err => console.error('Redis error:', err));
-
-  // redisService.expire('testKey', 30)
-  // .then(() => redisService.ttl('testKey'))
-  // .then(ttl => console.log('TTL of testKey:', ttl))
-  // .catch(err => console.error('Redis error:', err));
-// redisService.ttl('testKey')
-//   .then(ttl => console.log('TTL of testKey:', ttl))
-//   .catch(err => console.error('Redis error:', err));

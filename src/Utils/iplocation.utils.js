@@ -21,7 +21,6 @@ export const getIPLocation = async (ip) => {
         return { country: 'default', city: 'default' };
     } catch (error) {
         console.error('Error fetching IP location:', error.message);
-        //  ممنوع الـ throw هنا! بنرجع قيم افتراضية عشان السيرفر ميعطلش
         return { country: 'default', city: 'default' };
     }
 };
